@@ -1,0 +1,37 @@
+---
+- hosts: all
+  remote_user: root
+  gather_facts: False
+  tasks: 
+
+     - name: Check ifPython is present
+       raw: test -e /usr/bin/python
+       changed_when: false
+       failed_when: false
+       register: check python
+   
+     - name Install/Upgrade pip
+       pip: 
+         name: pip
+         extra_args: --upgrade
+         executable: pip3
+
+     - name: Download Java JDK
+       get_url:
+       url: http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-linux-x64.rpm
+       dest: /opt/jdk-8u60-linux-x64.rpm
+       headers: 'Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F;oraclelicense=accept-s$cept-securebackup-cookie'
+
+     vars: 
+       post_an_MOTD: |
+       Ansible Managed by Kurt Miguel L. Maiquez!
+
+     tasks:
+     - name: dispaly post an MOTD
+       debug: msg={{ post_an_MOTD.splt('\n') }}
+
+     - name: Encrypt Password
+       command: "python -c import crypt; print crypt.crypt(\"{{ FAP }}\")'"
+       register: EFAP
+     - name: "Add user Migs"
+       user: name= "Migs" state= "present" password= "{{EFAP.stdout }}"
